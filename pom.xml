@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.owoga</groupId>
   <artifactId>phonetics</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <name>com.owoga/phonetics</name>
   <description>Phonetics and syllabification of English words.</description>
   <url>https://github.com/com.owoga/phonetics</url>
