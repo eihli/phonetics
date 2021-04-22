@@ -1,5 +1,9 @@
 #+TITLE: Phonetics
 
+[[https://img.shields.io/clojars/v/com.owoga/phonetics.svg]]
+
+https://clojars.org/com.owoga/phonetics
+
 This library:
 
 - Gives you the phonetic pronunciation of a word.
