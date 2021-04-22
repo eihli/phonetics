@@ -168,10 +168,10 @@
   (mapv
    (fn [phoneme]
      (->> phoneme
-          (fn [^String phoneme]
-            (if (.equals phoneme "ax")
-              "ah"
-              phoneme))
+          ((fn [^String phoneme]
+             (if (.equals phoneme "ax")
+               "ah"
+               phoneme)))
           string/upper-case
           (#(if (vowel %) (str % "0") %))))
    phonemes))
@@ -207,3 +207,17 @@
     (if stressed?
       (stressed-phones-to-cmu-word-map phones)
       (unstressed-phones-to-cmu-word-map phones))))
+
+(comment
+  (get-phones "alaska")
+  ;; => [["AH0" "L" "AE1" "S" "K" "AH0"]]
+  (syllabify (first (get-phones "alaska")))
+  ;; => [["AH0"] ["L" "AE1" "S"] ["K" "AH0"]]
+  (syllabify (first (get-phones "foobarbazia")))
+  ;; => [["F" "UW1"] ["B" "AA1" "R"] ["B" "AA1"] ["Z" "IY0"] ["AH0"]]
+
+  (get-word ["AH" "L" "AE" "S" "K" "AH"])
+  ;; => ["alaska"]
+  (get-word ["N" "IY" "S"])
+  ;; => ["neice" "neece" "niece" "nice(1)" "kneece" "kniess" "neiss" "neace" "niess"]
+  )
