@@ -1,5 +1,7 @@
 (ns com.owoga.phonetics.util)
 
+#_(set! *warn-on-reflection* true)
+
 (defn take-through
   "(take-through even? [1 2 3 4 7 7 5 2 8 10])
    returns '((1 2 3 4) (7 7 5 2) (8) (10))"

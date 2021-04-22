@@ -5,6 +5,8 @@
             [clojure.set :as set])
   (:import (com.sun.speech.freetts.en.us CMULexicon)))
 
+#_(set! *warn-on-reflection* true)
+
 ;; From http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b.phones
 
 (def phonemap
@@ -166,7 +168,10 @@
   (mapv
    (fn [phoneme]
      (->> phoneme
-          (#(if (.equals % "ax") "ah" %))
+          (fn [^String phoneme]
+            (if (.equals phoneme "ax")
+              "ah"
+              phoneme))
           string/upper-case
           (#(if (vowel %) (str % "0") %))))
    phonemes))

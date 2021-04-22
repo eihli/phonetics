@@ -3,7 +3,7 @@
             [com.owoga.phonetics.util :as util]
             [clojure.string :as string]))
 
-(set! *warn-on-reflection* true)
+#_(set! *warn-on-reflection* true)
 
 ;; This sonority hierarchy may not be perfect.
 ;; It stems from: http://www.glottopedia.org/index.php/Sonority_hierarchy
