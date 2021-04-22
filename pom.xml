@@ -5,17 +5,17 @@
   <artifactId>phonetics</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <name>com.owoga/phonetics</name>
-  <description>FIXME: my new library.</description>
+  <description>Phonetics and syllabification of English words.</description>
   <url>https://github.com/com.owoga/phonetics</url>
   <licenses>
     <license>
-      <name>Eclipse Public License</name>
-      <url>http://www.eclipse.org/legal/epl-v10.html</url>
+      <name>MIT License</name>
+      <url>https://mit-license.org/</url>
     </license>
   </licenses>
   <developers>
     <developer>
-      <name>Eihli</name>
+      <name>Eric Ihli</name>
     </developer>
   </developers>
   <scm>

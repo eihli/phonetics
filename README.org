@@ -1,5 +1,66 @@
 #+TITLE: Phonetics
 
+This library:
+
+- Gives you the phonetic pronunciation of a word.
+- Syllabifies a sequence of phones.
+
+For phonetics, it uses the CMU Pronouncing Dictionary. http://www.speech.cs.cmu.edu/cgi-bin/cmudict/ and CMULexicon from https://freetts.sourceforge.io/javadoc/com/sun/speech/freetts/en/us/CMULexicon.html.
+
+#+begin_src clojure :results none :session usage-example
+(require '[com.owoga.phonetics :refer :all])
+
+(get-phones "hello")
+;; => [["HH" "AH0" "L" "OW1"] ["HH" "EH0" "L" "OW1"]]
+#+end_src
+
+
+For syllabification, it uses a custom algorithm that is basically:
+
+- Start from the last phone and work backwards.
+- Take every consonant up through the first vowel. (This is the "rime" of the syllable).
+- Take every consonant up through the next vowel with the conditions (This is the "onset" of the syllable):
+  - Each subsequent consonant is more sonorous than the previous.
+  - If the next vowel we'd encounter is lax, it gets followed by at least 1 consonant.
+- Repeat until no phones remain.
+
+That algorithm could be described as the maximal onset principle with an override that lax vowels must be in closed syllables (must end with a consonants).
+
+For example, `pity` would be syllabified as `pi` `ty` given the maximal onset principle but since lax vowels can't end a syllable it actually gets syllabified as `pit` `y`.
+
+#+begin_src clojure :results raw :session usage-example
+(require '[com.owoga.phonetics.syllabify :refer :all])
+
+(let [phones (first (get-phones "alaska"))]
+  (syllabify phones))
+;; => [["AH0"] ["L" "AE1" "S"] ["K" "AH0"]]
+#+end_src
+
+Thanks to CMULexicon, you can also syllabify made-up words.
+
+#+begin_src clojure :results none :session usage-example
+(let [phones (first (get-phones "foobarbazia"))]
+  (syllabify phones))
+;; => [["F" "UW1"] ["B" "AA1" "R"] ["B" "AA1"] ["Z" "IY0"] ["AH0"]]
+#+end_src
+
+You can also go backwards from a word, however this only works for words that appear in the CMU Dictionary. A future TODO and a request for contribution would be for a function that converts a made-up set of phonemes into a somewhat appropriate spelling of a word.
+
+#+begin_src clojure :results none :session usage-example
+(let [phones (first (get-phones "diploma"))]
+  [phones
+   (syllabify phones)
+   (get-word phones)])
+;; => [["D" "IH0" "P" "L" "OW1" "M" "AA0"]
+;;     [["D" "IH0" "P"] ["L" "OW1"] ["M" "AA0"]]
+;;     ["diploma"]]
+
+(let [phones (first (get-phones "foobarbazia"))]
+  (get-word phones))
+;; => nil
+#+end_src
+
+
 * Syllabification
 
 https://en.wikipedia.org/wiki/Syllable

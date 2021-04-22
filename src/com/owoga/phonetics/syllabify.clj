@@ -32,9 +32,18 @@
 (defn <sonorous [a b]
   (> (sonority a) (sonority b)))
 
-(defn slurp-rime [phones]
+(defn slurp-rime
+  "Returns a vector of the rime and the remaining phones to process."
+  [phones]
   (let [splits (util/take-through vowel? phones)]
     [(vec (reverse (first splits))) (vec (flatten (rest splits)))]))
+
+(comment
+  (slurp-rime ["AH" "K" "S" "AE" "L" "AH"])
+  ;; => [["AH"] ["K" "S" "AE" "L" "AH"]]
+  (slurp-rime ["K" "S" "AE" "L" "AH"])
+  ;; => [["AE" "S" "K"] ["L" "AH"]]
+  )
 
 (defn slurp-onset-given-rime
   "Phones and rime are vectors of phones.
@@ -42,18 +51,18 @@
   due to the maximal onset principle. Rime is forwards since
   it's the end-result of how we're reading the word.
 
-  Returns the unconsumed phones and the complete syllable."
+  Returns a vector of the syllable and the remaining phones to process."
   [phones rime]
   (loop [phones phones
          syllable rime]
     (cond
-      (empty? phones) [phones syllable]
+      (empty? phones) [syllable phones]
 
       ;; Two vowels next to each other is treated as two syllables.
       ;; This might not always be the case if the vowels are lax.
       ;; Is "royal" 1 syllable or two? This treats it as two.
       (vowel? (nth phones 0))
-      [phones syllable]
+      [syllable phones]
 
       ;; Maximal onset principle with exception for lax vowels occurring in
       ;; closed syllables.
@@ -67,20 +76,60 @@
       (recur (subvec phones 1)
              (into [(nth phones 0)] syllable))
 
-      :else [phones syllable])))
+      :else [syllable phones])))
 
-(defn syllabify [phones]
+(comment
+  (slurp-onset-given-rime
+   ["K" "S" "AE" "L" "A"]
+   ["AH"])
+
+  )
+(defn apply-stress [unstressed-syllables stressed-phones]
+  (loop [unstressed-syllables unstressed-syllables
+         stressed-phones stressed-phones
+         result-syllables [[]]]
+    (cond
+      (empty? stressed-phones)
+      result-syllables
+
+      (empty? (first unstressed-syllables))
+      (recur (rest unstressed-syllables)
+             stressed-phones
+             (conj result-syllables []))
+
+      :else
+      (recur
+       (cons (rest (first unstressed-syllables))
+             (rest unstressed-syllables))
+       (rest stressed-phones)
+       (conj (pop result-syllables) (conj (peek result-syllables) (first stressed-phones)))))))
+
+(comment
+  (apply-stress '(("AH") ("L" "AE" "S") ("K" "AH"))
+                '("AH0" "L" "AE1" "S" "K" "AH0"))
+  ;; => [["AH0"] ["L" "AE1" "S"] ["K" "AH0"]]
+
+  )
+
+(defn syllabify [original-phones]
   ;; It's easier to work backwards.
   ;; The final syllable will always be
   ;; all of the last (if any) consonants preceded by
   ;; (or folllowed-by considering we're working
   ;; backwards through the phones) a vowel.
   ;; So, reverse the phones as a first step.
-  (let [phones (vec (reverse phones))]
+  (let [phones (phonetics/remove-stress (reverse original-phones))]
     (loop [phones phones
            segments []]
       (if (empty? phones)
-        (map seq segments)
-        (let [[rime phones] (slurp-rime phones)
-              [phones syllable] (slurp-onset-given-rime phones rime)]
-          (recur phones (into [syllable] segments)))))))
+        (apply-stress segments original-phones)
+        (let [[rime phones'] (slurp-rime phones)
+              [syllable phones''] (slurp-onset-given-rime phones' rime)]
+          (recur phones'' (into [syllable] segments)))))))
+
+(comment
+  (phonetics/remove-stress ["AH" "L" "AE" "S" "K" "AH"])
+  (slurp-onset-given-rime ["L" "AE" "S" "K" "AH"] ["AH"])
+  (syllabify ["AH0" "L" "AE1" "S" "K" "AH0"])
+
+  )
