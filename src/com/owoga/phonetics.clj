@@ -84,7 +84,7 @@
               (vec (second %))))
        (into {})))
 
-(def word-alternatives
+(def cmu-word-alternatives
   "For words with multiple pronunciations in the CMU dictionary,
   this maps from the word to its variations.
   reputed -> reputed, reputed(1), reputed(2).
@@ -99,12 +99,22 @@
    {}
    (keys cmu-word-to-stressed-phones-map)))
 
+(defn word-alternatives
+  "For words with multiple pronunciations in the CMU dictionary,
+  this maps from the word to its variations.
+  reputed -> reputed, reputed(1), reputed(2).
+
+  Not particularly useful itself since reputed(1) doesn't tell you how it's
+  different from reputed. But it's useful to look up the pronunciations in the
+  CMU dictionary."
+  [word]
+  (get cmu-word-alternatives word))
+
 (def stressed-phones-to-cmu-word-map
   "The same sequence of phones can map to multiple words."
   (reduce
    (fn [m [k v]]
-     (let [k (string/replace k #"\(\d\)" "")]
-      (update m v (fnil conj []) k)))
+     (update m v (fnil conj []) k))
    {}
    cmu-word-to-stressed-phones-map))
 
@@ -125,10 +135,10 @@
   [neice neece niece nice kneece kniess neiss neace niess]]"
   (reduce
    (fn [m [k v]]
-     (let [k (string/replace k #"\(\d\)" "")]
+     (let [v (map #(string/replace % #"\d" "") v)]
       (update m v (fnil conj []) k)))
    {}
-   cmu-word-to-unstressed-phones-map))
+   cmu-word-to-stressed-phones-map))
 
 (CMULexicon. "cmulex" true)
 
@@ -176,17 +186,19 @@
   and falls back to the CMULexicon if the word doesn't exist in
   the dictionary.
 
-  Input must be lower-case."
-  [word]
-  (or (cmu-word-to-stressed-phones-map word)
-      (cmu-lexicon->cmu-pronouncing-dict
-       (.getPhones cmu-lexicon word nil))))
+  Input must be lower-case.
 
-(comment
-  ;; This demonstrates a problem with how we're handling words with multiple
-  ;; pronunciations.
-  (get-phones "hello")
-  ;; => ["HH" "AH0" "L" "OW1"]
-  (map get-phones (word-alternatives "hello"))
-  ;; => (["HH" "AH0" "L" "OW1"] ["HH" "EH0" "L" "OW1"])
-  )
+  Returns a vector of all possible pronunciations."
+  [word]
+  (let [cmu-phones (mapv cmu-word-to-stressed-phones-map (word-alternatives word))]
+    (if (seq cmu-phones)
+      cmu-phones
+      [(cmu-lexicon->cmu-pronouncing-dict
+        (.getPhones cmu-lexicon word nil))])))
+
+(defn get-word
+  [phones]
+  (let [stressed? (some #(re-matches #".*\d" %) phones)]
+    (if stressed?
+      (stressed-phones-to-cmu-word-map phones)
+      (unstressed-phones-to-cmu-word-map phones))))
