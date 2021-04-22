@@ -18,7 +18,7 @@ For phonetics, it uses the CMU Pronouncing Dictionary. http://www.speech.cs.cmu.
 For syllabification, it uses a custom algorithm that is basically:
 
 - Start from the last phone and work backwards.
-- Take every consonant up through the first vowel. (This is the "rime" of the syllable).
+- Take every consonant up through the the first encountered vowel. (This is the "rime" of the syllable).
 - Take every consonant up through the next vowel with the conditions (This is the "onset" of the syllable):
   - Each subsequent consonant is more sonorous than the previous.
   - If the next vowel we'd encounter is lax, it gets followed by at least 1 consonant.
