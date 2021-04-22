@@ -84,20 +84,51 @@
               (vec (second %))))
        (into {})))
 
+(def word-alternatives
+  "For words with multiple pronunciations in the CMU dictionary,
+  this maps from the word to its variations.
+  reputed -> reputed, reputed(1), reputed(2).
+
+  Not particularly useful itself since reputed(1) doesn't tell you how it's
+  different from reputed. But it's useful to look up the pronunciations in the
+  CMU dictionary."
+  (reduce
+   (fn [m k]
+     (let [norm-key (string/replace k #"\(\d\)" "")]
+       (update m norm-key (fnil (comp sort conj) []) k)))
+   {}
+   (keys cmu-word-to-stressed-phones-map)))
+
 (def stressed-phones-to-cmu-word-map
-  (set/map-invert cmu-word-to-stressed-phones-map))
+  "The same sequence of phones can map to multiple words."
+  (reduce
+   (fn [m [k v]]
+     (let [k (string/replace k #"\(\d\)" "")]
+      (update m v (fnil conj []) k)))
+   {}
+   cmu-word-to-stressed-phones-map))
 
 (def cmu-word-to-unstressed-phones-map
-  "For words with multiple pronunciations with different stresses,
-  drop/ignore all but the first. The choice to do so is arbitrary.
-  An alternative would be a map where two different keys mapped to
-  the same value."
   (->> cmu-word-to-stressed-phones-map
-       (remove (fn [[k _]] (re-matches #".*\(\d\)" k)))
-       (map (fn [[k v]] [k (map #(string/replace % #"\d" "") v)]))))
+       (mapv (fn [[k v]] [k (mapv #(string/replace % #"\d" "") v)]))
+       (into {})))
 
 (def unstressed-phones-to-cmu-word-map
-  (set/map-invert cmu-word-to-unstressed-phones-map))
+  "There might be unstressed phones that can map
+  to two different pronunciations when stress is added,
+  so this maps unstressed phones to a vector of words that
+  can be looked up in the CMU Pronouncing dictionary to
+  see what their stressed phones are.
+
+  Another example, look at how many words map to [N IY S].
+  [[N IY S]
+  [neice neece niece nice kneece kniess neiss neace niess]]"
+  (reduce
+   (fn [m [k v]]
+     (let [k (string/replace k #"\(\d\)" "")]
+      (update m v (fnil conj []) k)))
+   {}
+   cmu-word-to-unstressed-phones-map))
 
 (CMULexicon. "cmulex" true)
 
@@ -156,5 +187,6 @@
   ;; pronunciations.
   (get-phones "hello")
   ;; => ["HH" "AH0" "L" "OW1"]
-  ;; I pronounce that ["HH" "EH0" "L" "OW1"]
+  (map get-phones (word-alternatives "hello"))
+  ;; => (["HH" "AH0" "L" "OW1"] ["HH" "EH0" "L" "OW1"])
   )
