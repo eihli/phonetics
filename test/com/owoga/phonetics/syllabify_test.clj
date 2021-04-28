@@ -38,4 +38,7 @@
   ;; about handling ambisyllabic words. There's no such thing.
   (testing "pillow"
     (is (= '(("P" "IH") ("L" "OW"))
-           (syllabify ["P" "IH" "L" "OW"])))))
+           (syllabify ["P" "IH" "L" "OW"]))))
+  (testing "steel"
+    (is (= [["S" "T" "IY1" "L"]]
+           (syllabify ["S" "T" "IY1" "L"])))))

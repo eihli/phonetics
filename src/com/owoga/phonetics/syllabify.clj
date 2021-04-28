@@ -76,6 +76,10 @@
       (recur (subvec phones 1)
              (into [(nth phones 0)] syllable))
 
+      (not-any? vowel? phones)
+      (recur (subvec phones 1)
+             (into [(nth phones 0)] syllable))
+
       :else [syllable phones])))
 
 (comment
@@ -128,6 +132,9 @@
           (recur phones'' (into [syllable] segments)))))))
 
 (comment
+  (syllabify ["S" "T" "IY" "L"])
+  (slurp-rime (reverse ["S" "T" "IY" "L"]))
+  (slurp-onset-given-rime ["T" "S"] ["IY" "L"])
   (phonetics/remove-stress ["AH" "L" "AE" "S" "K" "AH"])
   (slurp-onset-given-rime ["L" "AE" "S" "K" "AH"] ["AH"])
   (syllabify ["AH0" "L" "AE1" "S" "K" "AH0"])
