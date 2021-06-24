@@ -5,38 +5,11 @@
 
 #_(set! *warn-on-reflection* true)
 
-;; This sonority hierarchy may not be perfect.
-;; It stems from: http://www.glottopedia.org/index.php/Sonority_hierarchy
-;; I tried to match the phones provided by the CMU dict to the hierarchies
-;; listed on that page:
-;;   vowels > liquids > nasals > voiced fricatives
-;;   > voiceless fricatives = voiced plosives
-;;   > voiceless plosives (Anderson & Ewen 1987)
-(def ^clojure.lang.PersistentVector sonority-hierarchy
-  ;;   more sonorous  < < < vowel < < < (maximal onset) vowel > > > less sonorous
-  ["vowel" "liquid" "semivowel" "aspirate" "affricate" "nasal" "fricative" "stop"])
-
-(def lax-vowels #{"EH" "IH" "AE" "AH" "UH"})
-
-(defn sonority [phone]
-  (.indexOf sonority-hierarchy (phonetics/phonemap phone)))
-
-(defn vowel? [phone]
-  (phonetics/vowel phone))
-
-(def consonant? (complement vowel?))
-
-(defn >sonorous [a b]
-  (< (sonority a) (sonority b)))
-
-(defn <sonorous [a b]
-  (> (sonority a) (sonority b)))
-
 (defn slurp-rime
   "Expects the phones in reverse order.
   Returns a vector of the rime (in forwards order) and the remaining phones to process."
   [phones]
-  (let [splits (util/take-through vowel? phones)]
+  (let [splits (util/take-through phonetics/vowel? phones)]
     [(vec (reverse (first splits))) (vec (flatten (rest splits)))]))
 
 (comment

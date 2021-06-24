@@ -156,6 +156,34 @@
   two different ways of getting phonemes."
   (CMULexicon/getInstance true))
 
+
+;; This sonority hierarchy may not be perfect.
+;; It stems from: http://www.glottopedia.org/index.php/Sonority_hierarchy
+;; I tried to match the phones provided by the CMU dict to the hierarchies
+;; listed on that page:
+;;   vowels > liquids > nasals > voiced fricatives
+;;   > voiceless fricatives = voiced plosives
+;;   > voiceless plosives (Anderson & Ewen 1987)
+(def ^clojure.lang.PersistentVector sonority-hierarchy
+  ;;   more sonorous  < < < vowel < < < (maximal onset) vowel > > > less sonorous
+  ["vowel" "liquid" "semivowel" "aspirate" "affricate" "nasal" "fricative" "stop"])
+
+(def lax-vowels #{"EH" "IH" "AE" "AH" "UH"})
+
+(defn sonority [phone]
+  (.indexOf sonority-hierarchy (phonemap phone)))
+
+(defn vowel? [phone]
+  (vowel (string/replace phone #"\d" "")))
+
+(def consonant? (complement vowel?))
+
+(defn >sonorous [a b]
+  (< (sonority a) (sonority b)))
+
+(defn <sonorous [a b]
+  (> (sonority a) (sonority b)))
+
 (defn remove-stress [phonemes]
   (mapv #(string/replace % #"\d" "") phonemes))
 
