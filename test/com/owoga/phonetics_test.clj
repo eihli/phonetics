@@ -13,4 +13,8 @@
     (is (= ["hello(1)"]
            (get-word ["HH" "EH" "L" "OW"])))
     (is (= ["ensure(1)" "insure"]
-           (get-word ["IH" "N" "SH" "UH" "R"])))))
+           (get-word ["IH" "N" "SH" "UH" "R"]))))
+  (testing "phrase to phones"
+    (is (= [["B" "AA1" "G" "HH" "AA1" "G"]
+            ["B" "AO1" "G" "HH" "AA1" "G"]]
+           (phrase-phones "bog hog")))))

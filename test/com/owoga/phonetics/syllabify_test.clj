@@ -41,4 +41,7 @@
            (syllabify ["P" "IH" "L" "OW"]))))
   (testing "steel"
     (is (= [["S" "T" "IY1" "L"]]
-           (syllabify ["S" "T" "IY1" "L"])))))
+           (syllabify ["S" "T" "IY1" "L"]))))
+  (testing "scotch"
+    (is (= [["S" "K" "AA1" "CH"]]
+           (syllabify ["S" "K" "AA1" "CH"])))))

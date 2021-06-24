@@ -2,7 +2,8 @@
   (:require [clojure.set]
             [clojure.string :as string]
             [clojure.java.io :as io]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [clojure.math.combinatorics :as combinatorics])
   (:import (com.sun.speech.freetts.en.us CMULexicon)))
 
 #_(set! *warn-on-reflection* true)
@@ -202,11 +203,30 @@
         (.getPhones cmu-lexicon word nil))])))
 
 (defn get-word
+  "Returns vector of all words that are in the CMU pronouncing dictionary
+  that have the pronunciation given `phones`.
+
+  Expects phones to have stress removed.
+
+  Not an exact inverse of `get-phones` since `get-phones` can figure out
+  somewhat appropriate phones for a made-up word. This function cannot
+  figure out the spelling of a made-up word provided the made-up word's phones.
+
+  Returns nil if no word can be found."
   [phones]
   (let [stressed? (some #(re-matches #".*\d" %) phones)]
     (if stressed?
       (stressed-phones-to-cmu-word-map phones)
       (unstressed-phones-to-cmu-word-map phones))))
+
+(defn phrase-phones
+  "Pronunciations of a words seperated by spaces."
+  [phrase]
+  (->> phrase
+       (#(string/split % #" "))
+       (map get-phones)
+       (apply combinatorics/cartesian-product)
+       (mapv (partial reduce into []))))
 
 (comment
   (get-phones "alaska")
@@ -220,4 +240,10 @@
   ;; => ["alaska"]
   (get-word ["N" "IY" "S"])
   ;; => ["neice" "neece" "niece" "nice(1)" "kneece" "kniess" "neiss" "neace" "niess"]
+  (get-word ["F" "UW" "B" "AE" "Z"])
+  ;; => nil
+  (phrase-phones "bog hog")
+  ;;  [["B" "AA1" "G" "HH" "AA1" "G"]
+  ;;   ["B" "AO1" "G" "HH" "AA1" "G"]]
+
   )
