@@ -33,7 +33,8 @@
   (> (sonority a) (sonority b)))
 
 (defn slurp-rime
-  "Returns a vector of the rime and the remaining phones to process."
+  "Expects the phones in reverse order.
+  Returns a vector of the rime (in forwards order) and the remaining phones to process."
   [phones]
   (let [splits (util/take-through vowel? phones)]
     [(vec (reverse (first splits))) (vec (flatten (rest splits)))]))
