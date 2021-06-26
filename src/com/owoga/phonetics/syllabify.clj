@@ -35,22 +35,22 @@
       ;; Two vowels next to each other is treated as two syllables.
       ;; This might not always be the case if the vowels are lax.
       ;; Is "royal" 1 syllable or two? This treats it as two.
-      (vowel? (nth phones 0))
+      (phonetics/vowel? (nth phones 0))
       [syllable phones]
 
       ;; Maximal onset principle with exception for lax vowels occurring in
       ;; closed syllables.
-      (and (consonant? (nth syllable 0))
-           (<sonorous (nth phones 0) (nth syllable 0))
-           (not (lax-vowels (nth phones 1 nil))))
+      (and (phonetics/consonant? (nth syllable 0))
+           (phonetics/<sonorous (nth phones 0) (nth syllable 0))
+           (not (phonetics/lax-vowels (nth phones 1 nil))))
       (recur (subvec phones 1)
              (into [(nth phones 0)] syllable))
 
-      (vowel? (nth syllable 0))
+      (phonetics/vowel? (nth syllable 0))
       (recur (subvec phones 1)
              (into [(nth phones 0)] syllable))
 
-      (not-any? vowel? phones)
+      (not-any? phonetics/vowel? phones)
       (recur (subvec phones 1)
              (into [(nth phones 0)] syllable))
 
